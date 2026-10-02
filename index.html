@@ -261,6 +261,8 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
         <div class="list" id="vehicleList"></div>
         <p class="section">Jeepney paint</p>
         <div class="list" id="skinList"></div>
+        <p class="section">Taxi paint</p>
+        <div class="list" id="taxiPaintList"></div>
         <p class="note">Every fare you collect goes into your Kita. Spend it on new vehicles and paint jobs.</p>
         <button class="ghost" id="garageBack">Back</button>
       </div>
@@ -375,7 +377,7 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     { region: "Metro Manila", name: "EDSA", sub: "Epifanio de los Santos Ave", finish: "CUBAO", route: "CUBAO – QUIAPO",
       len: 640, v0: 15, vmax: 21, gap: 14, goals: [10, 16], curve: 1, sky: ["#1d1b3f", "#7a3d6e", "#f59152"],
       ...PAL.city, rumble: ["#e9e4d8", "#c0392b"], props: ["pillar", "lamp"], scenery: "city",
-      traffic: [["bus", 0.4], ["car", 0.2], ["van", 0.1], ["trike", 0.15], ["pothole", 0.15]] },
+      traffic: [["bus", 0.35], ["car", 0.15], ["taxi", 0.12], ["van", 0.08], ["trike", 0.15], ["pothole", 0.15]] },
     { region: "Metro Manila", name: "NLEX", sub: "North Luzon Expressway", finish: "SAN FERNANDO EXIT", route: "ANGELES – SAN FERNANDO",
       len: 800, v0: 17, vmax: 24, gap: 13, goals: [12, 20], curve: 1, sky: ["#2f7fd6", "#7fbcef", "#dff2ff"],
       ...PAL.green, rumble: ["#f4f1e6", "#1f7a46"], props: ["tree", "kmpost"], scenery: "arayat",
@@ -387,7 +389,7 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     { region: "Metro Manila", name: "Roxas Blvd", sub: "Manila Bay", finish: "BACLARAN", route: "MONUMENTO – BACLARAN",
       len: 960, v0: 21, vmax: 30, gap: 11, goals: [15, 25], curve: 1, sky: ["#2b1f4f", "#c2507a", "#ffb067"],
       ground: ["#7b7480", "#716a76"], road: ["#3e3c47", "#3a3843"], rumble: ["#f4f1e6", "#e8402e"], props: ["palm", "lamp"], scenery: "bay",
-      traffic: [["bus", 0.25], ["car", 0.3], ["trike", 0.25], ["pothole", 0.2]] },
+      traffic: [["bus", 0.25], ["car", 0.15], ["taxi", 0.15], ["trike", 0.25], ["pothole", 0.2]] },
 
     // ---- Biyaheng Norte: Manila to Ilocos ----
     { region: "Biyaheng Norte", gate: 3, name: "SCTEX", sub: "Subic–Clark–Tarlac Expressway", finish: "TARLAC", route: "CLARK – TARLAC",
@@ -433,6 +435,8 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
       blurb: "The king of the road. ₱13 per passenger." },
     { id: "tricycle", name: "Tricycle", price: 500, fare: 10, dims: { w: 0.62, h: 0.72, d: 1.2 }, steer: 20, pace: 0.92,
       blurb: "Slim and quick to steer. ₱10 per passenger." },
+    { id: "taxi", name: "Taxi", price: 1000, fare: 25, dims: { w: 0.74, h: 0.62, d: 1.7 }, steer: 17, pace: 1.05,
+      blurb: "Nimble, with metered fares. ₱25 per passenger." },
     { id: "van", name: "UV Express", price: 1500, fare: 20, dims: { w: 0.8, h: 0.85, d: 2.2 }, steer: 15, pace: 1.08,
       blurb: "Faster, with higher fares. ₱20 per passenger." },
     { id: "bus", name: "Provincial Bus", price: 4000, fare: 30, dims: { w: 0.88, h: 1.1, d: 3.4 }, steer: 10, pace: 1,
@@ -476,6 +480,7 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     pothole: { w: 0.66, h: 0, d: 0.6 },
     pax: { w: 0.45, h: 0.62, d: 0.3 },
     van: { w: 0.8, h: 0.85, d: 2.2 },
+    taxi: { w: 0.74, h: 0.62, d: 1.7 },
     carabao: { w: 0.62, h: 0.8, d: 2.2 },
     calesa: { w: 0.7, h: 0.95, d: 2.3 },
     power: { w: 0.45, h: 0.45, d: 0.3 },
@@ -501,7 +506,7 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     v: 2, wallet: 0, stars: STAGES.map(() => 0), bestEndless: 0, bestKm: 0,
     vehicles: ["jeepney"], vehicle: "jeepney", adDay: "", adCount: 0,
     missions: [{ id: "pax", progress: 0 }, { id: "fares", progress: 0 }, { id: "powers", progress: 0 }],
-    mlevels: {}, skins: ["classic"], skin: "classic", nick: "", runs: 0,
+    mlevels: {}, skins: ["classic"], skin: "classic", taxiPaints: ["white"], taxiPaint: "white", nick: "", runs: 0,
   });
   let save = freshSave();
   let db = null, userApi = null, uid = null;
@@ -739,7 +744,7 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
   }
   function drawCar(e) {
     const cols = [["#f4f1e6", "#d9d5ca"], ["#2b2f38", "#1f2229"], ["#c0392b", "#a32f23"], ["#9aa1ad", "#7d8490"]];
-    const [c, cs] = cols[Math.floor(e.hue * cols.length)];
+    const [c, cs] = e.colors || cols[Math.floor(e.hue * cols.length)];
     shadow(e.x, e.z, e.w, e.d);
     wheels(e.x, e.z, e.w, e.d);
     const R = box(e.x, e.z, e.w, 0.32, e.d, 0.12, { rear: c, side: cs, top: c });
@@ -748,6 +753,23 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     tailLights(R, 0.2, 0.25);
     fr(R, 0.38, 0.45, 0.24, 0.22, "#f4f1e6");
     fr(R, 0, 0.82, 1, 0.18, "#2a2d34");
+  }
+  const TAXI_PAINTS = [
+    { id: "white", name: "White", price: 0, body: ["#f4f1e6", "#d9d5ca"], stripe: "#2f8fd8" },
+    { id: "yellow", name: "Yellow", price: 400, body: ["#ffc61a", "#e0a800"], stripe: "#14171f" },
+  ];
+  function drawTaxi(e) {
+    const paint = e.paint || TAXI_PAINTS[e.hue < 0.5 ? 0 : 1];
+    drawCar({ ...e, colors: paint.body });
+    sideBand(e.x, e.w, 0.3, 0.36, e.z, e.d, paint.stripe);
+    // lit roof sign
+    const S = box(e.x, e.z + 0.75, 0.34, 0.12, 0.22, 0.68, { rear: "#fff3b0", side: "#f4d35e", top: "#fff3b0" });
+    if (S.w > 10) {
+      ctx.fillStyle = "#c0392b";
+      ctx.font = `${Math.max(4, S.h * 0.75)}px Bungee, Arial Black, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("TAXI", S.x + S.w / 2, S.y + S.h * 0.55, S.w * 0.9);
+    }
   }
   function drawTrike(e) {
     const cols = ["#e8402e", "#2f8fd8", "#ffc23d", "#3ca66b"];
@@ -844,6 +866,7 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     const base = { x: player.x, z: ZP, ...v.dims, hue: 0 };
     if (v.id === "jeepney") drawJeepney(player.x, ZP, bounce, paxRiding, st.route, currentSkin());
     else if (v.id === "tricycle") drawTrike({ ...base, color: "#e8402e" });
+    else if (v.id === "taxi") drawTaxi({ ...base, paint: TAXI_PAINTS.find((t) => t.id === save.taxiPaint) || TAXI_PAINTS[0] });
     else if (v.id === "van") drawVan({ ...base, colors: ["#f4f1e6", "#dcd8cc"], route: st.route });
     else drawBus({ ...base, colors: ["#e0a21a", "#c48a12"], label: st.finish });
   }
@@ -1398,7 +1421,7 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     }
   }
 
-  const DRAW = { gantry: drawGantry, van: drawVan, carabao: drawCarabao, calesa: drawCalesa, bus: drawBus, truck: drawTruck, car: drawCar, trike: drawTrike, barrier: drawBarrier, pothole: drawPothole, pax: drawPax, power: drawPower, prop: drawProp };
+  const DRAW = { gantry: drawGantry, taxi: drawTaxi, van: drawVan, carabao: drawCarabao, calesa: drawCalesa, bus: drawBus, truck: drawTruck, car: drawCar, trike: drawTrike, barrier: drawBarrier, pothole: drawPothole, pax: drawPax, power: drawPower, prop: drawProp };
 
   function draw() {
     const st = STAGES[stageIdx];
@@ -1678,13 +1701,40 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     renderMenus();
   }
 
+  function renderTaxiPaints() {
+    const list = $("taxiPaintList");
+    list.innerHTML = TAXI_PAINTS.map((t) => {
+      const owned = save.taxiPaints.includes(t.id);
+      const using = save.taxiPaint === t.id;
+      const label = using ? "Using" : owned ? "Use" : `₱${t.price}`;
+      const can = !using && (owned || save.wallet >= t.price);
+      return `<div class="item${using ? " me" : ""}">
+        <span><b>${t.name}</b></span>
+        <button class="mini" data-taxipaint="${t.id}" ${can ? "" : "disabled"}>${label}</button>
+        <span class="swatch"><i style="background:${t.body[0]}"></i><i style="background:${t.body[1]}"></i><i style="background:${t.stripe}"></i><i style="background:#fff3b0"></i></span>
+      </div>`;
+    }).join("");
+    list.querySelectorAll("[data-taxipaint]").forEach((b) => b.addEventListener("click", () => {
+      const t = TAXI_PAINTS.find((x) => x.id === b.dataset.taxipaint);
+      if (!save.taxiPaints.includes(t.id)) {
+        if (save.wallet < t.price) return;
+        save.wallet -= t.price;
+        save.taxiPaints.push(t.id);
+      }
+      save.taxiPaint = t.id;
+      persist();
+      renderMenus();
+    }));
+  }
+
   function renderGarage() {
     renderVehicles();
+    renderTaxiPaints();
     const list = $("skinList");
     list.innerHTML = SKINS.map((k) => {
       const owned = save.skins.includes(k.id);
       const using = save.skin === k.id;
-      const label = using ? "Driving" : owned ? "Use" : `₱${k.price}`;
+      const label = using ? "Using" : owned ? "Use" : `₱${k.price}`;
       const can = !using && (owned || save.wallet >= k.price);
       return `<div class="item${using ? " me" : ""}">
         <span><b>${k.name}</b></span>

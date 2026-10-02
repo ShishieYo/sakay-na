@@ -1,6 +1,6 @@
 # Sakay Na!
 
-A one-tap Filipino road game. Drive a jeepney, tricycle, UV Express or provincial bus from Metro Manila to Ilocos and Bicol, pick up passengers, dodge traffic, and grab power-ups.
+A one-tap Filipino road game. Drive a jeepney, tricycle, taxi, UV Express or provincial bus from Metro Manila to Ilocos and Bicol, pick up passengers, dodge traffic, and grab power-ups.
 
 **Play:** https://shishieyo.github.io/sakay-na/
 
@@ -13,7 +13,7 @@ A one-tap Filipino road game. Drive a jeepney, tricycle, UV Express or provincia
 - Up to 3 stars per route, based on passengers picked up
 - Endless ride mode
 - Power-ups: Turbo, Magnet, Anting-anting, Rush Hour 2×
-- Missions, a garage of vehicles and jeepney paint jobs, and Kita (in-game earnings)
+- Missions, a garage of vehicles, jeepney paint jobs and taxi paints (white or yellow), and Kita (in-game earnings)
 
 ## Prototype notes
 - Ads and top-up purchases are placeholders. No real money is charged.
