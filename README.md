@@ -16,6 +16,14 @@ A one-tap Filipino road game. Drive a jeepney, tricycle, taxi, UV Express or pro
 - Missions, a garage of vehicles, jeepney paint jobs and taxi paints (white or yellow), and Kita (in-game earnings)
 
 ## Prototype notes
-- Ads and top-up purchases are placeholders. No real money is charged.
+- Top-up purchases are placeholders. No real money is charged. Rewarded ads are a countdown placeholder on the web and real AdMob ads (Google test ads for now) in the Android app.
 - Progress resets when the page is reloaded on this site. Saving and the Top drivers leaderboard only work in the Claude-hosted version.
-- Planned for the store release: Phaser + Capacitor build, AdMob rewarded ads, Google Play / App Store billing, Google Play Games and Game Center leaderboards.
+- Planned for the store release: Phaser build, Google Play / App Store billing, Google Play Games and Game Center leaderboards.
+
+## Android app (Capacitor + AdMob)
+```
+npm install
+npm run sync        # copies index.html + capacitor.js to www/ and syncs the Android project
+npx cap open android
+```
+Requires Android Studio. The app uses Google's AdMob test IDs; replace them before release (see `docs/superpowers/specs/2026-10-12-admob-rewarded-ads-design.md`).

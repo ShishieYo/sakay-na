@@ -1702,8 +1702,48 @@ button:focus-visible { outline: 3px solid var(--chalk); outline-offset: 3px; }
     }));
   }
 
-  // ---- Rewarded ad placeholder: 5-second countdown, then the reward ----
+  // ---- Rewarded ads: AdMob in the Android app, 5-second countdown placeholder on the web ----
+  // Google's test IDs. Replace with the real ids from the AdMob console before release
+  // (and the app id in android/app/src/main/AndroidManifest.xml).
+  const ADMOB = { rewardedAdId: "ca-app-pub-3940256099942544/5224354917" };
+  const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
+  let AdMob = null;
+  let admobReady = null;
+
+  // The native bridge only injects window.Capacitor; core's runtime (copied to www/ by `npm run sync`)
+  // adds registerPlugin, which is what exposes the AdMob plugin to the page.
+  // (The plugin proxy answers any property, `then` included, so it must never be resolved from a promise.)
+  function loadAdMob() {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "capacitor.js";
+      s.onload = () => {
+        AdMob = window.Capacitor.registerPlugin("AdMob");
+        AdMob.initialize().then(() => resolve(), reject);
+      };
+      s.onerror = () => reject(new Error("Failed to load capacitor.js"));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function showRewardedAd() {
+    if (!admobReady) {
+      admobReady = loadAdMob();
+      admobReady.catch(() => { admobReady = null; });
+    }
+    await admobReady;
+    await AdMob.prepareRewardVideoAd({ adId: ADMOB.rewardedAdId });
+    await AdMob.showRewardVideoAd(); // resolves only once the reward is earned
+  }
+
   function runAd(onReward) {
+    if (isNative) {
+      showRewardedAd().then(onReward, (err) => {
+        console.error("Rewarded ad failed", err);
+        alert("Ad not available right now. Please try again later.");
+      });
+      return;
+    }
     const scr = $("adScreen");
     const total = 5000, t0 = performance.now();
     scr.hidden = false;
