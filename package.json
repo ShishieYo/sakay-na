@@ -1,0 +1,14 @@
+{
+  "name": "sakay-na",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "sync": "mkdir -p www && cp index.html www/index.html && cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js && cap sync android"
+  },
+  "devDependencies": {
+    "@capacitor-community/admob": "^8.2.1",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  }
+}
